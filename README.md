@@ -18,6 +18,14 @@
 </p>
 
 
+
+<h1 align="center"> Descrição do projeto </h1>
+Este projeto faz consultas na api de livros gutendex para obter dados e registrálos no banco postgres, obtendo dados sobre autores de livros,
+livros, numero de downloads de livros, etc.
+
+
+
+
 # :hammer: Funcionalidades do projeto
 
 - `Buscar livro da api`: Busca livro da api e insere no banco de dados Postgres
