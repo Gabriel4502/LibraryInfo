@@ -41,12 +41,12 @@ livros, numero de downloads de livros, etc.
 
 # ✔️: Tecnologias e técnias utilizadas
 
-- `Java 17`:
-- `Spring Data`:
-- `Jpql`:
-- `Postgres`:
-- `Paradigma de orientação a objetos`:
-- `Java Streams`:
+- `Java 17`
+- `Spring Data`
+- `Jpql`
+- `Postgres`
+- `Paradigma de orientação a objetos`
+- `Java Streams`
 
 
 
