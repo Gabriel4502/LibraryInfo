@@ -6,12 +6,27 @@
 
 ![Static Badge](https://img.shields.io/badge/Maven-central)
 ![Static Badge](https://img.shields.io/badge/java-8)
+![Static Badge](https://img.shields.io/badge/Spring_Data-Jpa-red)
+![Static Badge](https://img.shields.io/badge/postgres-sql)
+
+
+
 
 
 <p align="center">
-<img loading="lazy" src="http://img.shields.io/static/v1?label=STATUS&message=EM%20FINALIZADO&color=GREEN&style=for-the-badge"/>
+<img loading="lazy" src="http://img.shields.io/static/v1?label=STATUS&message=FINALIZADO&color=GREEN&style=for-the-badge"/>
 </p>
 
+
+# :hammer: Funcionalidades do projeto
+
+- `Buscar livro da api`: Busca livro da api e insere no banco de dados Postgres
+- `Listar livros registrados`: Retorna uma lista com os livros registrados no banco de dados
+- `Listar autores registrados`: Retorna uma lista de autores registrados no banco de dados
+- `Listar autores vivos em determinado ano`: Lista os autores vivios em determinado século
+- `Listar livros por idioma`: Lista os livros registrados no banco, filtrados pelo idioma passado pelo usuario via input de texto
+- `Top 10 livros mais baixados`: Lista até 10 livros registrados no banco que possuem o maior numero de downloads
+- `Buscar autores pelo nome`: Busca os autores registrados, utilizando o nome do autor como parâmetro de busca
 
 
 
