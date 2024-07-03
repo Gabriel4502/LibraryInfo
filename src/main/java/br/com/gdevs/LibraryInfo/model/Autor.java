@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "autores")
@@ -29,6 +30,9 @@ public class Autor {
         this.dataMorte = dadosAutor.dataMorte();
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public Long getId() {
         return id;
@@ -65,5 +69,16 @@ public class Autor {
     public void setLivro(List<Livro> livro) {
         livro.forEach(e -> e.setAutor(this));
         this.livro = livro;
+    }
+
+    @Override
+    public String toString() {
+        List<String> livroNomes = this.livro.stream().map(Livro::getNome).collect(Collectors.toUnmodifiableList());
+        return "Autor{" +
+                " nome: " + nome +
+                ", Ano do nascimento: " + dataNasc +
+                ", Ano da morte: " + dataMorte +
+                ", livros: " + livroNomes  +
+                '}' + "\n";
     }
 }

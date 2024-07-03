@@ -9,15 +9,17 @@ import java.util.List;
 @Table(name = "livros")
 public class Livro {
 
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Id
     private Long id;
 
     private String nome;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    private Autor autor = new Autor();
+    @ManyToOne
+    private Autor autor;
 
-    private String idioma;
+    @Enumerated(EnumType.STRING)
+    private Idiomas idioma;
     private Long numeroDownloads;
 
     public Livro() {
@@ -26,9 +28,13 @@ public class Livro {
     public Livro(DadosLivro dadosLivro) {
         this.id = dadosLivro.id();
         this.nome = dadosLivro.nome();
-        this.idioma = dadosLivro.idioma().get(0);
+        this.idioma = Idiomas.fromString(dadosLivro.idioma().get(0));
         this.numeroDownloads = dadosLivro.numeroDownloads();
 
+    }
+
+    public void setAutorid(Long id){
+        this.autor.setId(id);
     }
 
     public String getNome() {
@@ -45,17 +51,15 @@ public class Livro {
 
     public void setAutor(Autor autor) {
 
-        this.autor.setNome(autor.getNome());
-        this.autor.setDataMorte(autor.getDataMorte());
-        this.autor.setDataNasc(autor.getDataNasc());
+        this.autor = autor;
     }
 
-    public String getIdioma() {
+    public Idiomas getIdioma() {
         return idioma;
     }
 
     public void setIdioma(String idioma) {
-        this.idioma = idioma;
+        this.idioma = Idiomas.fromString(idioma);
     }
 
     public Long getNumeroDownloads() {
@@ -73,11 +77,10 @@ public class Livro {
     @Override
     public String toString() {
         return "Livro{" +
-                "id=" + id +
-                ", nome='" + nome + '\'' +
-                ", autor=" + autor.getNome() +
-                ", idioma='" + idioma + '\'' +
-                ", numeroDownloads=" + numeroDownloads +
-                '}';
+                ", nome: " + nome +
+                ", autor: " + autor.getNome() +
+                ", idioma: " + idioma +
+                ", numeroDownloads: " + numeroDownloads +
+                '}' +"\n";
     }
 }

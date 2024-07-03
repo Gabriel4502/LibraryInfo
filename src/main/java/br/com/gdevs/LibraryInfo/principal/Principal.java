@@ -5,11 +5,12 @@ import br.com.gdevs.LibraryInfo.repository.RepositorioAutor;
 import br.com.gdevs.LibraryInfo.repository.RepositorioLivro;
 import br.com.gdevs.LibraryInfo.service.ConsumoApi;
 import br.com.gdevs.LibraryInfo.service.ConverteDados;
+import br.com.gdevs.LibraryInfo.service.InfoService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 
-import java.util.InputMismatchException;
-import java.util.Optional;
-import java.util.Scanner;
+import java.time.Year;
+import java.util.*;
 
 public class Principal {
 
@@ -19,14 +20,18 @@ public class Principal {
     private ConsumoApi consumoApi = new ConsumoApi();
     public ConverteDados conversor = new ConverteDados();
     private Scanner scan = new Scanner(System.in);
+    @Autowired
+    private InfoService service;
     private int option = -1;
-    private DadosLivro livro;
+    private DadosLivro livroDados;
+
     private String BASE_URL = "https://gutendex.com/books/?search=";
 
 
-    public Principal(RepositorioLivro repositorioLivro, RepositorioAutor repositorioAutor) {
+    public Principal(RepositorioLivro repositorioLivro, RepositorioAutor repositorioAutor, InfoService service) {
         this.repositorioLivro = repositorioLivro;
         this.repositorioAutor = repositorioAutor;
+        this.service = service;
     }
 
     public void exibeMenu() {
@@ -43,18 +48,20 @@ public class Principal {
                     5)- Listar livros em um determinado idioma
                     6)- Top10 livros mais baixados
                     7)- Buscar autor por nome
-                    8)- Estatisticas
                     0)- Sair
                     
                     """);
-            try {
-                option = scan.nextInt();
-                scan.nextLine();
-            }catch (InputMismatchException e){
-                System.out.println("Charactere inválido, digite a opção novamente.");
-                continue;
-            }
+//            try {
+//                option = scan.nextInt();
+//
+//            }catch (InputMismatchException e){
+//                System.out.println("Charactere inválido, digite a opção novamente.");
+//                scan.nextLine();
+//                continue;
+//            }
 
+            option = scan.nextInt();
+            scan.nextLine();
 
             switch (option){
                 case 1:
@@ -68,86 +75,161 @@ public class Principal {
                 case 3:
                     buscarAutoresRegistrados();
                     break;
+
+                case 4:
+                    buscarLivrosPorAno();
+                    break;
+
+                case 5:
+                    buscarLivrosPorIdioma();
+                    break;
+
+                case 6:
+                    buscarTop10LivrosBaixados();
+                    break;
+
+                case 7:
+                    buscarAutorPorNome();
+                    break;
+
             }
         }
 
 
-
-
-
-
-//        var json = consumoApi.obterDados("https://gutendex.com/books/?search=dom+casmurro");
-//
-//        System.out.println(json);
-
-
-
     }
 
-    private void buscarAutoresRegistrados() {
-    }
 
-    private void buscarLivrosRegistrados() {
-    }
+
 
     private void buscarLivroPorTitulo() {
         System.out.println("Nome do livro: ");
         String livroNome ="";
         Autor autor = new Autor();
-        Livro livro1 = new Livro();
+        List <Livro> livro1 = new ArrayList<>();
 
+        String json;
 
         try{
             livroNome = scan.nextLine();
-            var json = consumoApi.obterDados(BASE_URL+livroNome.replace(" ", "+"));
+            json = consumoApi.obterDados(BASE_URL+livroNome.replace(" ", "+"));
             System.out.println(json);
+        }catch (IllegalArgumentException e){
+            throw new RuntimeException(e);
+        }
             Resposta resposta = conversor.obterDados(json, Resposta.class);
             System.out.println(resposta);
             try{
 
-                livro = resposta.livro().get(0);
+                livroDados = resposta.livro().get(0);
                 System.out.println(resposta);
 
-                DadosLivro dadosLivro = new DadosLivro(livro.id(), livro.nome(), livro.dadosAutor(), livro.idioma(), livro.numeroDownloads());
+                DadosLivro dadosLivro = new DadosLivro(livroDados.id(), livroDados.nome(), livroDados.dadosAutor(), livroDados.idioma(), livroDados.numeroDownloads());
                 System.out.println(dadosLivro);
-                var autorList = dadosLivro.dadosAutor();
-                DadosAutor dadosAutor = new DadosAutor(autorList.get(0).nome(), autorList.get(0).dataNasc(), autorList.get(0).dataMorte());
+
+                var autorDados = dadosLivro.dadosAutor();
+                DadosAutor dadosAutor = new DadosAutor(autorDados.get(0).nome(), autorDados.get(0).dataNasc(), autorDados.get(0).dataMorte());
+
                 autor = new Autor(dadosAutor);
-                livro1 = new Livro(dadosLivro);
-                livro1.setAutor(autor);
+
+                livro1.add(new Livro(dadosLivro));
+
+                System.out.println(autor);
                 System.out.println(dadosAutor);
             }catch (IndexOutOfBoundsException e){
                 System.out.println("Nenhum livro encontrado"+ e);
+                return;
             }
 
-            try{
-                repositorioLivro.save(livro1);
+        Optional<Autor> autorExistente = service.verificarDuplicidade(autor);
+        System.out.println(autorExistente);
 
-            }catch (DataIntegrityViolationException e){
-                throw new RuntimeException(e);
+            if(autorExistente.isPresent()){
+                var autorEncontrado = autorExistente.get();
+                System.out.println(autorEncontrado);
+              autorEncontrado.setLivro(livro1);
+                System.out.println(livro1);
+            }else{
+                repositorioAutor.save(autor);
+                livro1.get(0).setAutor(autor);
+                System.out.println(livro1);
             }
 
-
-
+        try {
+            repositorioLivro.save(livro1.get(0));
             System.out.println(livro1);
-
-        }catch (IllegalArgumentException e){
-            throw new RuntimeException(e);
+        } catch (DataIntegrityViolationException e) {
+            System.out.println("Erro ao salvar livro: " + e.getMessage());
         }
 
-//        private Optional<Livro> verificarDuplicidade(){
-//
-//            return Optional<Livro> livro();
-//        }
-
-
-
-//        List <DadosLivro> dadosLivro = resposta.livro().stream()
-//                        .map(l -> new DadosLivro(l.id(), l.nome(), l.dadosAutor(), l.idioma(), l.numeroDownloads())).collect(Collectors.toList());
-
-
-
-
-
     }
+
+    private void buscarAutoresRegistrados() {
+        List <Autor> autoresLista = service.obterAutoresRegistrados();
+        autoresLista.forEach(System.out::println);
+    }
+
+    private void buscarLivrosRegistrados() {
+        List livrosLista = service.obterTodosOsLivros();
+        System.out.println(livrosLista);
+    }
+
+    private void buscarLivrosPorAno() {
+        System.out.println("Qual ano deseja verificar autor vivo?");
+        Integer ano = scan.nextInt();
+        Year year = Year.of(ano);
+        List<Autor> autores = service.obterAutoresVivosEmAno(year);
+        System.out.println("Autores vivos nos anos " + ano);
+        System.out.println(autores);
+    }
+
+
+    private void buscarLivrosPorIdioma() {
+
+        System.out.println("""
+                **************************************
+                Insira o idioma para realizar a busca
+                pt-Português
+                en-Inglês
+                es-Espanhol
+                de-Dinamarquês
+                fr-Franês
+                fi-Finlandês
+                fr-Francês
+                """);
+        var nomeIdioma = scan.nextLine();
+        Idiomas idiomas = Idiomas.fromString(nomeIdioma);
+        List<Livro> livrosPorCategoria = service.buscarLivrosEmIdioma(idiomas);
+        if(livrosPorCategoria.isEmpty()){
+            System.out.println("Nenhum livro encontrado para esse idioma");
+        }else{
+            System.out.println("Livros em " + Idiomas.fromString(nomeIdioma));
+            System.out.println(livrosPorCategoria);
+        }
+    }
+
+    private void buscarAutorPorNome() {
+        System.out.println("Qual autor deseja pesquisar? ");
+        var nomeAtor = scan.nextLine();
+        List<Autor> autor = service.buscarAutoresPorNome(nomeAtor);
+        if(autor.isEmpty()){
+            System.out.println("Nenhum ator encontrado");
+        }else{
+
+            System.out.println(autor);
+        }
+    }
+
+
+    private void buscarTop10LivrosBaixados() {
+        List <Livro> livrosLista = service.top10LivrosMaisBaixados();
+        System.out.println(livrosLista);
+    }
+
+
+
+
+
+
+
+
 }
